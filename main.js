@@ -4,7 +4,7 @@ const imgReprovado = '<img src="./images/reprovado.png" alt="Emoji decepcionado"
 
 let linhas = '';
 const notas = [];
-const nomesAtividades = [];  // Array para armazenar os nomes das atividades
+const nomesAtividades = [];
 
 form.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -17,22 +17,23 @@ form.addEventListener('submit', function(e) {
     const nota = parseFloat(inputNotaAtividade.value);
     const notaMinima = parseFloat(inputNotaMinima.value);
 
-    // Verifica se a nota inserida é válida
     if (isNaN(nota) || nota < 0 || nota > 10) {
         alert("Por favor, insira uma nota válida entre 0 e 10.");
         return;
     }
 
-    // Verifica se o nome da atividade já foi inserido
+    if (notaMinima < 0 || notaMinima > 10) {
+        alert("Por favor, insira uma nota mínima válida entre 0 e 10.");
+        return;
+    }
+
     if (nomesAtividades.includes(nomeAtividade)) {
         alert("Essa atividade já foi inserida! Por favor, insira um nome diferente.");
         return;
     }
 
-    // Adiciona o nome da atividade ao array
     nomesAtividades.push(nomeAtividade);
 
-    // Cria a linha da tabela
     let linha = '<tr>';
     linha += `<td>${nomeAtividade}</td>`;
     linha += `<td>${nota}</td>`;
@@ -51,18 +52,28 @@ form.addEventListener('submit', function(e) {
     inputNotaAtividade.value = '';
 });
 
-// Atualiza a média final
+// Atualiza a média final e verifica aprovação/reprovação
 function atualizarMediaFinal() {
+    if (notas.length === 0) {
+        const campoMedia = document.getElementById('media-final');
+        const resultadoFinal = document.getElementById('resultado-final');
+        campoMedia.textContent = '0';
+        resultadoFinal.textContent = 'Nenhuma atividade inserida';
+        resultadoFinal.classList.remove('aprovado', 'reprovado');
+        return;
+    }
+
     const soma = notas.reduce((total, nota) => total + nota, 0);
     const media = soma / notas.length;
 
     const campoMedia = document.getElementById('media-final');
     const resultadoFinal = document.getElementById('resultado-final');
+    const notaMinima = parseFloat(document.getElementById('nota-minima').value);
 
     const mediaAjustada = Math.round(media * 2) / 2;
     campoMedia.textContent = Number.isInteger(mediaAjustada) ? mediaAjustada : mediaAjustada.toFixed(1);
-    
-    if (media >= 7) {
+
+    if (media >= notaMinima) {
         resultadoFinal.textContent = 'Aprovado';
         resultadoFinal.classList.remove('reprovado');
         resultadoFinal.classList.add('aprovado');
@@ -73,4 +84,18 @@ function atualizarMediaFinal() {
     }
 }
 
+// Função para limpar os dados
+document.getElementById('limpar').addEventListener('click', function() {
+    linhas = '';
+    notas.length = 0;
+    nomesAtividades.length = 0;
 
+    const corpoTabela = document.querySelector('tbody');
+    corpoTabela.innerHTML = '';
+
+    const campoMedia = document.getElementById('media-final');
+    const resultadoFinal = document.getElementById('resultado-final');
+    campoMedia.textContent = '0';
+    resultadoFinal.textContent = 'Nenhuma atividade inserida';
+    resultadoFinal.classList.remove('aprovado', 'reprovado');
+});
